@@ -328,94 +328,38 @@ void *mm_realloc(void *ptr, size_t size)
     size_t awords = MAX(MIN_BLOCK_SIZE_WORDS, size/WSIZE);
 
     struct block *oldblock = ptr - offsetof(struct block, payload);
-    //check neighboring blocks
-        
-        //printf("Block address: %d\n", (int )&ptr );
-        //printf("Block size: %d\n", temp->header.size);
-        //printf("Size requested: %zu\n", size);
-        //printf("Heap starts at: %d\n", (int )&heap_listp );
-        //printf("Heap size is : %d\n", heap_listp->header.size );
-   
-      //printf("Who dat blok?" );
-    /*
-    if(size < blk_size(oldblock))
-    {
-        //printf("Realloc to a smaller block \n");
-        mark_block_used(oldblock, size);
-        return oldblock;
-
-
-
-    } */ 
 
     if(blk_free(next_blk(oldblock)))
     {
         struct block *nextBlock = next_blk(oldblock);
         size_t newSize = blk_size(oldblock) + blk_size(nextBlock);
-       // printf("Given block size was : %zu\n", blk_size(oldblock));
-       // printf("%s", oldblock->payload);
-        //printf("New size is : %zu\n", newSize);
-            if(newSize >= awords)
-            {
-                //printf("New size fits! \n");
-                RB_REMOVE(mytree, &tree, nextBlock);
-
-                if ((newSize - awords) >= MIN_BLOCK_SIZE_WORDS) 
-                { 
-                    mark_block_used(oldblock, awords);
-                    struct block * nxtBlock = next_blk(oldblock);
-                    mark_block_free(nxtBlock, newSize - awords);
-                    RB_INSERT(mytree, &tree, nxtBlock);
-                }
-                return oldblock->payload;
-            }
-                              
-    }
-
-/*
-    printf("Block address: %d\n", (int )&ptr );
-    printf("Block size: %d\n", temp->header.size);
-    printf("Size requested: %zu\n", size);
-    printf("Heap starts at: %d\n", (int )&heap_listp );
-    printf("Heap size is : %d\n", heap_listp->header.size );
-    if(blk_free(prev_blk(oldblock)))
-    {
-        struct block *prevBlock = next_blk(oldblock);
-        size_t newSize = blk_size(oldblock) + blk_size(prevBlock);
-       // printf("Given block size was : %zu\n", blk_size(oldblock));
-       // printf("%s", oldblock->payload);
-        //printf("New size is : %zu\n", newSize);
-            if(newSize >= awords)
-            {
-                //printf("New size fits! \n");
-                RB_REMOVE(mytree, &tree, prevBlock);
-
-                if ((newSize - awords) >= MIN_BLOCK_SIZE_WORDS) 
-                { 
-                    mark_block_used(oldblock, awords);
-                    struct block * nxtBlock = next_blk(oldblock);
-                    mark_block_free(nxtBlock, newSize - awords);
-                    RB_INSERT(mytree, &tree, nxtBlock);
-                }
-                return oldblock->payload;
-            }
-                              
-    }
-     */       
-
-        newptr = mm_malloc(size);
-        //printf("Called Realloc\n");
-        /* If realloc() fails the original block is left untouched  */
-        if(!newptr) 
+        if(newSize >= awords)
         {
-            return 0;
+            RB_REMOVE(mytree, &tree, nextBlock);
+
+            if ((newSize - awords) >= MIN_BLOCK_SIZE_WORDS) 
+            { 
+                mark_block_used(oldblock, awords);
+                struct block * nxtBlock = next_blk(oldblock);
+                mark_block_free(nxtBlock, newSize - awords);
+                RB_INSERT(mytree, &tree, nxtBlock);
+            }
+            return oldblock->payload;
         }
+        
+    }      
+
+    newptr = mm_malloc(size);
+    if(!newptr) 
+    {
+        return 0;
+    }
 
         /* Copy the old data. */
-        
-        oldsize = blk_size(oldblock) * WSIZE;
-        if(size < oldsize) oldsize = size;
-        memcpy(newptr, ptr, oldsize);
+    
+    oldsize = blk_size(oldblock) * WSIZE;
+    if(size < oldsize) oldsize = size;
+    memcpy(newptr, ptr, oldsize);
 
 
 
@@ -504,14 +448,3 @@ static struct block *find_fit(size_t asize)
         return p;
     }
 }
-
-team_t team = {
-    /* Team name */
-    "Weitao Li + Mark Manuel",
-    /* First member's full name */
-    "Weitao Li",
-    "weitao92@vt.edu",
-    /* Second member's full name (leave blank if none) */
-    "Mark Manuel",
-    "mark95@vt.edu",
-};
